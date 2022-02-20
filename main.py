@@ -163,7 +163,6 @@ def clicked():
     if is_random.get():
         random.shuffle(words_lst)
 
-    print("is_random.get():", is_random.get())
     carts_count = words_lst_len // count_words_of_cart + bool(words_lst_len % count_words_of_cart)
     print(combo.get())
     print(words_lst)
@@ -181,47 +180,62 @@ def clicked():
     else:
         end_words_lst = words_lst_len
 
-    date = str(datetime.datetime.now()).replace(':', '_')
-    with open(PATH_RES.joinpath(f'{date}.svg'), 'w', encoding='utf-8') as file:
-        file.write(FILE_HEAD_SVG)
+    if combo2.get() == 'default':
+        class_svg_object = RectSGV
+    else:
+        class_svg_object = TempFileSVG
+        TempFileSVG('g_1', PATH_TMP.joinpath(combo2.get()))
 
-        if combo2.get() == 'default':
-            class_svg_object = RectSGV
+    sub_path = 1
+    while True:
+        if carts_count > 0:
+            if carts_count >= 8:
+                carts_count_in_page = 8
+            else:
+                carts_count_in_page = carts_count
+            print('carts_count_in_page', carts_count_in_page)
         else:
-            class_svg_object = TempFileSVG
-            TempFileSVG('g_1', PATH_TMP.joinpath(combo2.get()))
+            break
 
-        for i_cart in range(carts_count):
-            rect = class_svg_object(f'rect{i_cart}')
-            rect.x = 7 + 71.083 * (i_cart % 4)
-            rect.y = 7 + 99 * bool(i_cart >= 4)
-            file.write(rect.get_str())
+        date = str(datetime.datetime.now()).replace(':', '_')
+        with open(PATH_RES.joinpath(f'{date}_page{sub_path}.svg'), 'w', encoding='utf-8') as file:
+            file.write(FILE_HEAD_SVG)
 
-            i = 0
-            if add_number.get():
-                for i_word in range(start_words_lst, end_words_lst):
-                    text_svg = TextSGV(f'text{i_word}', str(i + 1) + ' ' + words_lst[i_word])
-                    text_svg.x = rect.x + 8
-                    text_svg.y = rect.y + 12 + (round(TextSGV.font_size * 3.78 / 4.97, 2) + padding_bottom_word) * i
-                    file.write(text_svg.get_str())
-                    i += 1
-            else:
-                for i_word in range(start_words_lst, end_words_lst):
-                    text_svg = TextSGV(f'text{i_word}', words_lst[i_word])
-                    text_svg.x = rect.x + 8
-                    text_svg.y = rect.y + 12 + (round(TextSGV.font_size * 3.78 / 4.97, 2) + padding_bottom_word) * i
-                    file.write(text_svg.get_str())
-                    i += 1
+            for i_cart in range(carts_count_in_page):
+                rect = class_svg_object(f'rect{i_cart}')
+                rect.x = 7 + 71.083 * (i_cart % 4)
+                rect.y = 7 + 99 * bool(i_cart >= 4)
+                file.write(rect.get_str())
 
-            start_words_lst = end_words_lst
-            # end_words_lst = start_words_lst + count_words_of_cart if (start_words_lst + count_words_of_cart) <= words_lst_len else words_lst_len
-            if (start_words_lst + count_words_of_cart) <= words_lst_len:
-                end_words_lst = start_words_lst + count_words_of_cart
-            else:
-                end_words_lst = words_lst_len
+                i = 0
+                if add_number.get():
+                    for i_word in range(start_words_lst, end_words_lst):
+                        text_svg = TextSGV(f'text{i_word}', str(i + 1) + ' ' + words_lst[i_word])
+                        text_svg.x = rect.x + 6
+                        text_svg.y = rect.y + 12 + (round(TextSGV.font_size * 3.78 / 4.97, 2) + padding_bottom_word) * i
+                        file.write(text_svg.get_str())
+                        i += 1
+                else:
+                    for i_word in range(start_words_lst, end_words_lst):
+                        text_svg = TextSGV(f'text{i_word}', words_lst[i_word])
+                        text_svg.x = rect.x + 6
+                        text_svg.y = rect.y + 12 + (round(TextSGV.font_size * 3.78 / 4.97, 2) + padding_bottom_word) * i
+                        file.write(text_svg.get_str())
+                        i += 1
 
-        file.write(FILE_END_SVG)
-        lbl3.configure(text="генерація пройшла успішно")
+                start_words_lst = end_words_lst
+                # end_words_lst = start_words_lst + count_words_of_cart if (start_words_lst + count_words_of_cart) <= words_lst_len else words_lst_len
+                if (start_words_lst + count_words_of_cart) <= words_lst_len:
+                    end_words_lst = start_words_lst + count_words_of_cart
+                else:
+                    end_words_lst = words_lst_len
+
+            file.write(FILE_END_SVG)
+
+        sub_path += 1
+        carts_count -= 8
+
+    lbl3.configure(text="генерація пройшла успішно")
 
 
 window = Tk()
